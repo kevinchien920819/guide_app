@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'pages/login_page.dart'; // Import LoginScreen
 
 void main() {
   runApp(const MyApp());
@@ -11,10 +12,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Default Page')),
-        body: const MainScreen(),
+      title: 'MyApp',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      home: const MainScreen(),
     );
   }
 }
@@ -28,52 +30,87 @@ class MainScreen extends StatefulWidget {
 
 class MainScreenState extends State<MainScreen> {
   final FlutterTts flutterTts = FlutterTts();
+  bool _isLoggedIn = false;
 
-  void _speak(texts) async {
+  void _speak(String texts) async {
     await flutterTts.setLanguage("zh-TW");
     await flutterTts.setPitch(1.0);
-    await flutterTts.speak("$texts");
+    await flutterTts.speak(texts);
+  }
+
+  void _loginSuccess() {
+    setState(() {
+      _isLoggedIn = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        const Padding(
-          padding:  EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children:  <Widget>[
-              Expanded(
-                child: Center(
-                  child: Text(
-                    'where you go ?',
-                    style: TextStyle(fontSize: 20),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Default Page'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () {
+              if (_isLoggedIn) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Already logged in'))
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LoginScreen(
+                      onLoginSuccess: _loginSuccess,
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'where you go ?',
+                      style: TextStyle(fontSize: 20),
+                    ),
                   ),
                 ),
-              ),
-              IconButton(
-                icon: Icon(Icons.search),
-                onPressed: null,  // 需要添加功能
-              ),
-            ],
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    _speak('search');
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-        OptionButton(label: 'Home', onTap: () {_speak('home');}),
-        OptionButton(label: 'Work place', onTap: () {_speak('work');}),
-        OptionButton(label: 'Saved place', onTap: () {_speak('save place');}),
-        Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: FloatingActionButton(
-            onPressed: () {
-              _speak('Please say your destination');
-            },
-            backgroundColor: Colors.white,
-            child: const Icon(Icons.mic),
+          OptionButton(label: 'Home', onTap: () {_speak('home');}),
+          OptionButton(label: 'Work place', onTap: () {_speak('work');}),
+          OptionButton(label: 'Saved place', onTap: () {_speak('save place');}),
+          Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: FloatingActionButton(
+              onPressed: () {
+                _speak('Please say your destination');
+              },
+              backgroundColor: Colors.white,
+              child: const Icon(Icons.mic),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
