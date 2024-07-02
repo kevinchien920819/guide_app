@@ -40,6 +40,9 @@ dependencies:
   cupertino_icons: ^1.0.6
   google_nav_bar: ^5.0.6
   bloc: ^8.1.4
+  google_maps_flutter: ^2.7.0
+  location: ^7.0.0
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:
