@@ -43,6 +43,8 @@ dependencies:
   google_maps_flutter: ^2.7.0
   location: ^7.0.0
   http: ^1.2.1
+  android_intent_plus: ^5.0.2
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
@@ -67,8 +69,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  assets:
-    - lib/images/
+  # assets:
+    # - lib/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
