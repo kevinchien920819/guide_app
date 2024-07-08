@@ -16,6 +16,9 @@ class _MapPageState extends State<MapPage> {
   final Location _locationController = Location();
   final Completer<GoogleMapController> _mapController =
       Completer<GoogleMapController>();
+
+  //test place for taipei101 and taipeistation 
+  // TODO:change the sorce location and destination location
   static const LatLng _taipeistation = LatLng(25.0474, 121.5171);
   static const LatLng _taipei101 = LatLng(25.033671, 121.564427);
   LatLng? _currentP;
@@ -125,6 +128,7 @@ class _MapPageState extends State<MapPage> {
     });
   }
 
+  // get route from google api by the polylinepoint  
   Future<List<LatLng>> getPolylinePoints() async {
     List<LatLng> polylineCoordinates = [];
     PolylinePoints polylinePoints = PolylinePoints();
