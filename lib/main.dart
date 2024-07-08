@@ -109,9 +109,9 @@ class MainScreenState extends State<MainScreen> {
               ],
             ),
           ),
-          OptionButton(label: 'Home', onTap: () {_speak('home'); Navigator.push(context, MaterialPageRoute(builder: (context) => const MapScreen()));}),
-          OptionButton(label: 'Work place', onTap: () {_speak('work'); Navigator.push(context, MaterialPageRoute(builder: (context) => const MapScreen()));}),
-          OptionButton(label: 'Saved place', onTap: () {_speak('save place'); Navigator.push(context, MaterialPageRoute(builder: (context) => const MapScreen()));}),
+          OptionButton(label: 'Home', onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => const MapPage()));}),
+          OptionButton(label: 'Work place', onTap: () {_speak('work'); Navigator.push(context, MaterialPageRoute(builder: (context) => const MapPage()));}),
+          OptionButton(label: 'Saved place', onTap: () {_speak('save place'); Navigator.push(context, MaterialPageRoute(builder: (context) => const MapPage()));}),
           Padding(
             padding: const EdgeInsets.all(32.0),
             child: FloatingActionButton(

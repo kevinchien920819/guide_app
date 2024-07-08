@@ -1,142 +1,111 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+import 'package:location/location.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+class MapPage extends StatefulWidget {
+  const MapPage({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _MapScreenState createState() => _MapScreenState();
+  State<MapPage> createState() => _MapPageState();
 }
 
-class _MapScreenState extends State<MapScreen> {
-  late GoogleMapController mapController;
-  final LatLng _center = const LatLng(45.521563, -122.677433);
+class _MapPageState extends State<MapPage> {
+  Location _locationController = Location();
+  final Completer<GoogleMapController> _mapController = Completer<GoogleMapController>();
+  LatLng? _currentP;
+  static const LatLng _taipeistation = LatLng(25.0474, 121.5171);
+  static const LatLng _taipei101 = LatLng(25.033671, 121.564427);
+  BitmapDescriptor? customIcon;
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
+  @override
+  void initState() {
+    super.initState();
+    getLocationUpdates();
+    _setCustomMarker();
+  }
+
+  void _setCustomMarker() async {
+    customIcon = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(20, 20)),
+      'assets/user_location.png',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Maps Sample App'),
-          backgroundColor: Colors.green[700],
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ),
-        body: GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: CameraPosition(
-            target: _center,
-            zoom: 11.0,
-          ),
-        ),
-      ),
+    return Scaffold(
+      body: _currentP == null
+          ? const Center(child: CircularProgressIndicator())
+          : GoogleMap(
+              onMapCreated: (GoogleMapController controller) {
+                _mapController.complete(controller);
+              },
+              initialCameraPosition: const CameraPosition(
+                target: _taipei101,
+                zoom: 12.0,
+              ),
+              markers: {
+                if (_currentP != null)
+                  Marker(
+                    markerId: const MarkerId('_currentLocation'),
+                    position: _currentP!,
+                    icon: customIcon ?? BitmapDescriptor.defaultMarker,
+                    infoWindow: const InfoWindow(title: 'Current Location'),
+                  ),
+                const Marker(
+                  markerId: MarkerId('_sourceLocation'),
+                  position: _taipei101,
+                  icon: BitmapDescriptor.defaultMarker,
+                  infoWindow: InfoWindow(title: 'Taipei 101'),
+                ),
+                const Marker(
+                  markerId: MarkerId('_destinationLocation'),
+                  position: _taipeistation,
+                  icon: BitmapDescriptor.defaultMarker,
+                  infoWindow: InfoWindow(title: 'Taipei Station'),
+                ),
+              },
+            ),
     );
   }
+
+  Future<void> _cameraToPosition(LatLng pos) async {
+    final GoogleMapController controller = await _mapController.future;
+    CameraPosition _newCameraPosition = CameraPosition(
+      target: pos,
+      zoom: 13.0,
+    );
+    await controller.animateCamera(CameraUpdate.newCameraPosition(_newCameraPosition));
+  }
+
+  Future<void> getLocationUpdates() async {
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+
+    _serviceEnabled = await _locationController.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await _locationController.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await _locationController.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await _locationController.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationController.onLocationChanged.listen((LocationData currentLocation) {
+      if (currentLocation.latitude != null && currentLocation.longitude != null) {
+        setState(() {
+          _currentP = LatLng(currentLocation.latitude!, currentLocation.longitude!);
+          _cameraToPosition(_currentP!);
+        });
+      }
+    });
+  }
 }
-
-// import 'dart:convert';
-// import 'package:flutter/material.dart';
-// import 'package:google_maps_flutter/google_maps_flutter.dart';
-// import 'package:http/http.dart' as http;
-
-// class MapScreen extends StatefulWidget {
-//   final String destination;
-//   const MapScreen({Key? key, required this.destination}) : super(key: key);
-
-//   @override
-//   _MapScreenState createState() => _MapScreenState();
-// }
-
-// class _MapScreenState extends State<MapScreen> {
-//   late GoogleMapController mapController;
-//   Set<Polyline> _polylines = Set<Polyline>();
-
-//   void _onMapCreated(GoogleMapController controller) {
-//     mapController = controller;
-//     _getRoute();
-//   }
-
-//   void _getRoute() async {
-//     String url = 'https://maps.googleapis.com/maps/api/directions/json?origin=你的起始位置&destination=${widget.destination}&key=你的API金鑰';
-//     var response = await http.get(Uri.parse(url));
-//     var json = jsonDecode(response.body);
-
-//     var route = json['routes'][0]['overview_polyline']['points'];
-//     var points = _convertToLatLng(_decodePoly(route));
-//     setState(() {
-//       _polylines.add(Polyline(
-//         polylineId: PolylineId('route1'),
-//         visible: true,
-//         points: points,
-//         width: 4,
-//         color: Colors.blue,
-//         startCap: Cap.roundCap,
-//         endCap: Cap.roundCap,
-//       ));
-//     });
-//   }
-
-//   List<LatLng> _convertToLatLng(List points) {
-//     List<LatLng> result = <LatLng>[];
-//     for (int i = 0; i < points.length; i++) {
-//       if (i % 2 != 0) {
-//         result.add(LatLng(points[i - 1], points[i]));
-//       }
-//     }
-//     return result;
-//   }
-
-//   List _decodePoly(String poly) {
-//     var list = poly.codeUnits;
-//     var lList = new List();
-//     int index = 0;
-//     int len = poly.length;
-//     int c = 0;
-//     // repeating until all attributes are decoded
-//     do {
-//       var shift = 0;
-//       int result = 0;
-
-//       // for decoding value of one attribute
-//       do {
-//         c = list[index] - 63;
-//         result |= (c & 0x1F) << shift;
-//         index++;
-//         shift += 5;
-//       } while (c >= 32);
-//       // if value is negetive then bitwise not the value
-//       if (result & 1 == 1) {
-//         result = ~result;
-//       }
-//       var result1 = (result >> 1) * 0.00001;
-//       lList.add(result1);
-//     } while (index < len);
-
-//     //adding latitude and longitude successively to the list
-//     for (var i = 2; i < lList.length; i++) lList[i] += lList[i - 2];
-
-//     return lList;
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text('Map to ' + widget.destination)),
-//       body: GoogleMap(
-//         onMapCreated: _onMapCreated,
-//         polylines: _polylines,
-//         initialCameraPosition: CameraPosition(
-//           target: LatLng(25.0330, 121.5654), //預設位置，可以修改
-//           zoom: 14.0,
-//         ),
-//       ),
-//     );
-//   }
-// }
