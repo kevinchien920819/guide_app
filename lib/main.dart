@@ -116,6 +116,17 @@ class MainScreenState extends State<MainScreen> {
               ],
             ),
           ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  child: Text("Source Location"),
+                ),
+              ],
+            ),
+          ),
           // the source destination selector
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -128,10 +139,21 @@ class MainScreenState extends State<MainScreen> {
                     controller: sourceController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      hintText: 'Source Location',
+                      hintText: 'Enter Source Location here',
                     ),
                   ),
                 )),
+              ],
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  child: Text("Destination Location"),
+                ),
               ],
             ),
           ),
@@ -147,7 +169,7 @@ class MainScreenState extends State<MainScreen> {
                       controller: destinationController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: 'Destination Location',
+                        hintText: 'Enter Destination Location here',
                       ),
                     ),
                   ),
@@ -156,18 +178,25 @@ class MainScreenState extends State<MainScreen> {
                   icon: const Icon(Icons.search),
                   onPressed: () {
                     _speak('search');
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          // Retrieve the text the that user has entered by using the
-                          // TextEditingController.
-                          content: Text(
-                            'Source: ${sourceController.text}\nDestination: ${destinationController.text}',
-                          ),
-                        );
-                      },
-                    );
+                    // showDialog(
+                    //   context: context,
+                    //   builder: (context) {
+                    //     return AlertDialog(
+                    //       // Retrieve the text the that user has entered by using the
+                    //       // TextEditingController.
+                    //       content: Text(
+                    //         'Source: ${sourceController.text}\nDestination: ${destinationController.text}',
+                    //       ),
+                    //     );
+                    //   },
+                    // );
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => MapPage(
+                                  source: sourceController.text,
+                                  destination: destinationController.text,
+                                )));
                   },
                 ),
               ],
@@ -179,22 +208,37 @@ class MainScreenState extends State<MainScreen> {
               label: 'Home',
               onTap: () {
                 _speak('home');
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const MapPage()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => MapPage(
+                              source: sourceController.text,
+                              destination: destinationController.text,
+                            )));
               }),
           OptionButton(
               label: 'Work place',
               onTap: () {
                 _speak('work');
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const MapPage()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => MapPage(
+                              source: sourceController.text,
+                              destination: destinationController.text,
+                            )));
               }),
           OptionButton(
               label: 'Saved place',
               onTap: () {
                 _speak('save place');
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const MapPage()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => MapPage(
+                              source: sourceController.text,
+                              destination: destinationController.text,
+                            )));
               }),
           Padding(
             padding: const EdgeInsets.all(32.0),

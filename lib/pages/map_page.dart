@@ -6,8 +6,10 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_guide_app/constants/constants.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
-
+  // const MapPage({super.key});
+  final String source;
+  final String destination;
+  const MapPage({Key? key, required this.source, required this.destination}) : super(key: key);
   @override
   State<MapPage> createState() => _MapPageState();
 }
