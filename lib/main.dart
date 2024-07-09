@@ -1,4 +1,118 @@
+// import 'package:flutter/material.dart';
+// import 'package:flutter_tts/flutter_tts.dart';
+// import 'pages/login_page.dart'; // 导入 LoginScreen
+// import 'pages/map_page.dart'; // 导入 MapScreen
+
+// void main() {
+//   runApp(const MyApp());
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'MyApp',
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//       ),
+//       home: const MainScreen(),
+//     );
+//   }
+// }
+
+// class MainScreen extends StatefulWidget {
+//   const MainScreen({super.key});
+
+//   @override
+//   MainScreenState createState() => MainScreenState();
+// }
+
+// class MainScreenState extends State<MainScreen> {
+//   final FlutterTts flutterTts = FlutterTts();
+//   bool _isLoggedIn = false; // 檢查是否登入
+
+//   // 語音合成
+//   void _speak(String texts) async {
+//     await flutterTts.setLanguage("zh-TW");
+//     await flutterTts.setPitch(1.0);
+//     await flutterTts.speak(texts);
+//   }
+
+//   // 登入成功
+//   void _loginSuccess() {
+//     setState(() {
+//       _isLoggedIn = true;
+//     });
+//   }
+
+//   final sourceController = TextEditingController();
+//   final destinationController = TextEditingController();
+
+//   @override
+//   void dispose() {
+//     sourceController.dispose();
+//     destinationController.dispose();
+//     super.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         actions: <Widget>[
+//           IconButton(
+//             icon: const Icon(Icons.account_circle),
+//             iconSize: 50,
+//             onPressed: () {
+//               if (_isLoggedIn) {
+//                 ScaffoldMessenger.of(context).showSnackBar(
+//                   SnackBar(content: Text('Already logged in')),
+//                 );
+//               } else {
+//                 Navigator.push(
+//                   context,
+//                   MaterialPageRoute(builder: (context) => LoginScreen(onLoginSuccess: _loginSuccess)),
+//                 );
+//               }
+//             },
+//           ),
+//         ],
+//       ),
+//       body: Center(
+//         child: Column(
+//           children: [
+//             TextField(
+//               controller: sourceController,
+//               decoration: InputDecoration(labelText: 'Source Address'),
+//             ),
+//             TextField(
+//               controller: destinationController,
+//               decoration: InputDecoration(labelText: 'Destination Address'),
+//             ),
+//             ElevatedButton(
+//               onPressed: () {
+//                 Navigator.push(
+//                   context,
+//                   MaterialPageRoute(
+//                     builder: (context) => MapPage(
+//                       source: sourceController.text,
+//                       destination: destinationController.text,
+//                     ),
+//                   ),
+//                 );
+//               },
+//               child: Text('Show Map'),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 import 'package:flutter/material.dart';
+// import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'pages/login_page.dart'; // 导入 LoginScreen
 import 'pages/map_page.dart'; // 导入 MapScreen
@@ -177,17 +291,25 @@ class MainScreenState extends State<MainScreen> {
                   icon: const Icon(Icons.search),
                   onPressed: () {
                     _speak('search');
-                    // check is source locaiton and destination locaiton is empty
-                    if (sourceController.text.isNotEmpty ||
-                        destinationController.text.isNotEmpty) {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => MapPage(
-                                    source: sourceController.text,
-                                    destination: destinationController.text,
-                                  )));
-                    }
+                    // showDialog(
+                    //   context: context,
+                    //   builder: (context) {
+                    //     return AlertDialog(
+                    //       // Retrieve the text the that user has entered by using the
+                    //       // TextEditingController.
+                    //       content: Text(
+                    //         'Source: ${sourceController.text}\nDestination: ${destinationController.text}',
+                    //       ),
+                    //     );
+                    //   },
+                    // );
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => MapPage(
+                                  source: sourceController.text,
+                                  destination: destinationController.text,
+                                )));
                   },
                 ),
               ],

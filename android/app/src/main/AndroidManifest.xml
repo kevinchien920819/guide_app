@@ -1,6 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- location permisssion get -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <!-- microphone permission get -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
     <application
         android:label="flutter_guide_app"
         android:name="${applicationName}"
@@ -40,7 +47,12 @@
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
         <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <!-- Android SDK 30 or later
+If you are targeting Android SDK, i.e. you set your targetSDKVersion to 30 or later, 
+then you will need to add the following to your AndroidManifest.xml 
+right after the permissions section. See the example app for the complete usage. -->
+            <action android:name="android.speech.RecognitionService" /> 
+            <action android:name="android.intent.action.PROCESS_TEXT"/> 
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
