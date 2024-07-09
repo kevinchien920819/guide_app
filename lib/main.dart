@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_guide_app/services/speech_to_text_service.dart';
-// import 'services/speech_to_text_service.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'pages/login_page.dart'; // 导入 LoginScreen
 import 'pages/map_page.dart'; // 导入 MapScreen
-
-
+import 'services/speech_to_text_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,25 +32,22 @@ class MainScreen extends StatefulWidget {
 }
 
 class MainScreenState extends State<MainScreen> {
-
-
-// Flutter tts service 
+  // Flutter tts service 
   final FlutterTts flutterTts = FlutterTts();
   void _speak(String texts) async {
     await flutterTts.setLanguage("zh-TW");
     await flutterTts.setPitch(1.0);
     await flutterTts.speak(texts);
+    await flutterTts.setVolume(1.0);
   }
 
-
-// login info and login sucess
+  // login info and login sucess
   bool _isLoggedIn = false; // 檢查是否登入
   void _loginSuccess() {
     setState(() {
       _isLoggedIn = true;
     });
   }
-
 
   // Speech to text service
   final SpeechToTextService _speechToTextService = SpeechToTextService();
@@ -67,29 +61,35 @@ class MainScreenState extends State<MainScreen> {
   }
 
   void _initSpeech() async {
-    await _speechToTextService.initSpeech();
+    await _speechToTextService.initSpeechState();
     setState(() {});
   }
 
   void _toggleListening() {
     if (_isListening) {
       _speechToTextService.stopListening();
+      _speak('你剛剛說$_lastWords');
     } else {
-      _speechToTextService.startListening(_onSpeechResult);
+      _speechToTextService.startListening((result) {
+        setState(() {
+          _lastWords = result;
+        });
+      });
     }
     setState(() {
       _isListening = !_isListening;
     });
   }
 
-  void _onSpeechResult(String result) {
-    setState(() {
-      _lastWords = result;
-    });
-  }
 
+  // void _onSpeechResult(String result) {
+  //   setState(() {
+  //     _lastWords = result;
+  //     print(_lastWords);
+  //   });
+  // }
 
-  //controller for source and destination
+  // controller for source and destination
   final sourceController = TextEditingController();
   final destinationController = TextEditingController();
 
@@ -101,12 +101,10 @@ class MainScreenState extends State<MainScreen> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // title: const Text('Default Page'),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.account_circle),
@@ -133,7 +131,6 @@ class MainScreenState extends State<MainScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          // the text row
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Row(
@@ -160,7 +157,6 @@ class MainScreenState extends State<MainScreen> {
               ],
             ),
           ),
-          // the source destination selector
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -170,7 +166,7 @@ class MainScreenState extends State<MainScreen> {
                     child: Center(
                   child: TextField(
                     controller: sourceController,
-                    decoration:  InputDecoration(
+                    decoration: InputDecoration(
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
                       hintText: 'Enter Source Location here',
                     ),
@@ -190,7 +186,6 @@ class MainScreenState extends State<MainScreen> {
               ],
             ),
           ),
-          // the destination selector
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -200,7 +195,7 @@ class MainScreenState extends State<MainScreen> {
                   child: Center(
                     child: TextField(
                       controller: destinationController,
-                      decoration:  InputDecoration(
+                      decoration: InputDecoration(
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
                         hintText: 'Enter Destination Location here',
                       ),
@@ -210,46 +205,29 @@ class MainScreenState extends State<MainScreen> {
               ],
             ),
           ),
-          Padding( 
+          Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Center(
-                child: ElevatedButton(
-                      
-                      iconAlignment: IconAlignment.end,
-                      child: const Text('Search'),
-                      // prefixIcon: const Icon(Icons.search),
-                      onPressed: () {
-                        _speak('search');
-                        // showDialog(
-                        //   context: context,
-                        //   builder: (context) {
-                        //     return AlertDialog(
-                        //       // Retrieve the text the that user has entered by using the
-                        //       // TextEditingController.
-                        //       content: Text(
-                        //         'Source: ${sourceController.text}\nDestination: ${destinationController.text}',
-                        //       ),
-                        //     );
-                        //   },
-                        // );
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => MapPage(
-                                      source: sourceController.text,
-                                      destination: destinationController.text,
-                                    )));
-                      },
-                    ),
-              ),
-            ],
+              children: <Widget>[
+                Center(
+                  child: ElevatedButton(
+                    child: const Text('Search'),
+                    onPressed: () {
+                      _speak('search');
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MapPage(
+                                    source: sourceController.text,
+                                    destination: destinationController.text,
+                                  )));
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
-          // optionbutton of favorite place
-          // TODO: login check to use favorite place
           OptionButton(
               label: 'Home',
               onTap: () {
@@ -291,13 +269,16 @@ class MainScreenState extends State<MainScreen> {
             child: FloatingActionButton(
               tooltip: '聆聽',
               onPressed: () {
-                // TODO: get data from speech to text
-                _speak('Please say your destination');
-                _toggleListening;
-                // 
+                if(!_isListening){
+                  _speak('Please say your destination');
+                }
+
+                _toggleListening();
+
+                
               },
               backgroundColor: Colors.white,
-              child: Icon(_isListening ? Icons.mic_off : Icons.mic),
+              child: Icon(_isListening ? Icons.mic : Icons.mic_off),
             ),
           ),
         ],
@@ -306,7 +287,6 @@ class MainScreenState extends State<MainScreen> {
   }
 }
 
-// option button content
 class OptionButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;

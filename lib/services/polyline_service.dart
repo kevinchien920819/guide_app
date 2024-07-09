@@ -25,6 +25,7 @@ class PolylineService {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       }
     } else {
+      // ignore: use_build_context_synchronously
       showErrorDialog(context, 'error get polyline${result.errorMessage}');
     }
     return polylineCoordinates;

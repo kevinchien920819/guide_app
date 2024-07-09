@@ -87,6 +87,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   // Move camera to the specified position
+  // ignore: unused_element
   Future<void> _cameraToPosition(LatLng pos) async {
     final GoogleMapController controller = await _mapController.future;
     CameraPosition newCameraPosition = CameraPosition(
@@ -132,7 +133,7 @@ class _MapPageState extends State<MapPage> {
       setState(() {
         _currentP = position; // Update current location
         //TODO: Uncomment the following line to move the camera to the current location
-        _cameraToPosition(_currentP!);
+        // _cameraToPosition(_currentP!);
       });
     });
   }
