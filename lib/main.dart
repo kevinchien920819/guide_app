@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'pages/login_page.dart'; // 导入 LoginScreen
 import 'pages/map_page.dart'; // 导入 MapScreen
@@ -178,25 +177,17 @@ class MainScreenState extends State<MainScreen> {
                   icon: const Icon(Icons.search),
                   onPressed: () {
                     _speak('search');
-                    // showDialog(
-                    //   context: context,
-                    //   builder: (context) {
-                    //     return AlertDialog(
-                    //       // Retrieve the text the that user has entered by using the
-                    //       // TextEditingController.
-                    //       content: Text(
-                    //         'Source: ${sourceController.text}\nDestination: ${destinationController.text}',
-                    //       ),
-                    //     );
-                    //   },
-                    // );
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => MapPage(
-                                  source: sourceController.text,
-                                  destination: destinationController.text,
-                                )));
+                    // check is source locaiton and destination locaiton is empty
+                    if (sourceController.text.isNotEmpty ||
+                        destinationController.text.isNotEmpty) {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MapPage(
+                                    source: sourceController.text,
+                                    destination: destinationController.text,
+                                  )));
+                    }
                   },
                 ),
               ],
