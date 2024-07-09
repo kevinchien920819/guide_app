@@ -8,8 +8,9 @@ class PolylineService {
       LatLng? sourceLocation, LatLng? destinationLocation, String googleApiKey, Function(BuildContext, String) showErrorDialog, BuildContext context) async {
     List<LatLng> polylineCoordinates = [];
     PolylinePoints polylinePoints = PolylinePoints();
-    if (sourceLocation == null || destinationLocation == null)
+    if (sourceLocation == null || destinationLocation == null) {
       return polylineCoordinates;
+    }
 
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       googleApiKey:Constants.googleApiKey,

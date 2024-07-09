@@ -43,4 +43,4 @@ app.*.map.json
 /android/app/release
 
 # developing program
-lib/services/speech_to_text_service.dart
+lib/databases/db_helper.dart

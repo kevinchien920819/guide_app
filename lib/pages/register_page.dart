@@ -32,27 +32,30 @@ class RegisterForm extends StatelessWidget {
         children: <Widget>[
           TextField(
             controller: _emailController,
-            decoration: const InputDecoration(
+            decoration:  InputDecoration(
               labelText: 'Email',
-              border: OutlineInputBorder(),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              prefixIcon: const Icon(Icons.mail_rounded),
             ),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _passwordController,
             obscureText: true,
-            decoration: const InputDecoration(
+            decoration:  InputDecoration(
               labelText: 'Password',
-              border: OutlineInputBorder(),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              prefixIcon: const Icon(Icons.lock_rounded),
             ),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _confirmPasswordController,
             obscureText: true,
-            decoration: const InputDecoration(
+            decoration:  InputDecoration(
               labelText: 'Confirm Password',
-              border: OutlineInputBorder(),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              prefixIcon: const Icon(Icons.lock_rounded),
             ),
           ),
           const SizedBox(height: 16),
