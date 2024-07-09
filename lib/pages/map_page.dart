@@ -136,38 +136,57 @@ class _MapPageState extends State<MapPage> {
   }
 
   // 根據地址獲取經緯度
-  Future<void> _getLatLngFromAddress(String address, bool isSource) async {
-    print(address);
-    final String url =
-        'https://maps.googleapis.com/maps/api/geocode/json?address=$address&key=${Constants.googleApiKey}';
-    print(url);
-    final response = await http.get(Uri.parse(url));
-    // print(response.body);
-    final json = jsonDecode(response.body);
+Future<void> _getLatLngFromAddress(String address, bool isSource) async {
+  final String url =
+      'https://maps.googleapis.com/maps/api/geocode/json?address=$address&key=${Constants.googleApiKey}';
+  final response = await http.get(Uri.parse(url));
+  // print(response.body);
+  final json = jsonDecode(response.body);
 
-    if (json['status'] == 'OK') {
-      final lat = json['results'][0]['geometry']['location']['lat'];
-      final lng = json['results'][0]['geometry']['location']['lng'];
-      // print(lat);
-      // print(lng);
-      setState(() {
-        if (isSource) {
-          _sourceLocation = LatLng(lat, lng);
-        } else {
-          _destinationLocation = LatLng(lat, lng);
-        }
-        getLocationUpdates().then(
-          (_) => {
-            getPolylinePoints().then((coordinates) => {
-                  generatePolyLineFromPoints(coordinates), // 獲取並生成路徑
-                }),
-          },
-        );
-      });
-    } else {
-      print('Error: ${json['error_message']}');
-    }
+  if (json['status'] == 'OK') {
+    final lat = json['results'][0]['geometry']['location']['lat'];
+    final lng = json['results'][0]['geometry']['location']['lng'];
+    // print(lat);
+    // print(lng);
+    setState(() {
+      if (isSource) {
+        _sourceLocation = LatLng(lat, lng);
+      } else {
+        _destinationLocation = LatLng(lat, lng);
+      }
+      getLocationUpdates().then(
+        (_) => {
+          getPolylinePoints().then((coordinates) => {
+                generatePolyLineFromPoints(coordinates), // 獲取並生成路徑
+              }),
+        },
+      );
+    });
+  } else {
+    _showErrorDialog('Error: ${json['error_message']}');
   }
+}
+
+void _showErrorDialog(String errorMessage) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('錯誤'),
+        content: Text(errorMessage),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('確定'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   // 獲取路徑點
   Future<List<LatLng>> getPolylinePoints() async {
@@ -186,13 +205,12 @@ class _MapPageState extends State<MapPage> {
         mode: TravelMode.walking,
       ),
     );
-    print(result.points);
     if (result.points.isNotEmpty) {
       for (var point in result.points) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       }
     } else {
-      print('error get polyline${result.errorMessage}');
+      _showErrorDialog('error get polyline${result.errorMessage}');
     }
     return polylineCoordinates;
   }
