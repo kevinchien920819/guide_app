@@ -44,3 +44,5 @@ app.*.map.json
 
 # developing program
 lib/databases/db_helper.dart
+lib/services/speech_to_text_service.dart
+lib/services/test.dart

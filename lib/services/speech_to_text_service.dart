@@ -1,116 +1,35 @@
-import 'dart:async';
-import 'dart:math';
-import 'package:speech_to_text/speech_to_text.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_recognition_error.dart';
+// import 'package:speech_to_text/speech_to_text.dart';
+// class SpeechToTextService {
+//   final SpeechToText _speechToText = SpeechToText();
+//   // bool available = await speech.initialize( onStatus: statusListener, onError: errorListener );
+//   // if ( available ) {
+//   //   speech.listen( onResult: resultListener );
+//   // }
+//   // else {
+//   //   print("The user has denied the use of speech recognition.");
+//   // }
 
-class SpeechToTextService {
-  // ignore: unused_field
-  bool _hasSpeech = false;
-  // bool _logEvents = false;
-  final bool _onDevice = false;
-  double level = 100.0;
-  double minSoundLevel = 50000;
-  double maxSoundLevel = -50000;
-  String lastWords = '';
-  String lastError = '';
-  String lastStatus = '';
-  String _currentLocaleId = '';
-  List<LocaleName> _localeNames = [];
-  final SpeechToText speech = SpeechToText();
+//   Future<void> initSpeechState() async {
+//     await _speechToText.initialize(onStatus: statusListener, onError: errorListener );
+//     var locales = await _speechToText.locales();
 
-  Future<void> initSpeechState() async {
-    // _logEvent('Initialize');
-    try {
-      var hasSpeech = await speech.initialize(
-        onError: errorListener,
-        onStatus: statusListener,
-        // debugLogging: _logEvents,
-      );
-      // 這邊設定語言依據系統設定
-      if (hasSpeech) {
-        _localeNames = await speech.locales();
-        var systemLocale = await speech.systemLocale();
-        _currentLocaleId = systemLocale?.localeId ?? '';
-      }
-      _hasSpeech = hasSpeech;
-    } catch (e) {
-      lastError = 'Speech recognition failed: ${e.toString()}';
-      _hasSpeech = false;
-    }
-  }
+//    // Some UI or other code to select a locale from the list
+//    // resulting in an index, selectedLocale
 
-  void startListening(Function(String) onResult) {
-    // _logEvent('start listening');
-    lastWords = '';
-    lastError = '';
-    final options = SpeechListenOptions(
-      onDevice: _onDevice,
-      listenMode: ListenMode.confirmation,
-      cancelOnError: true,
-      partialResults: true,
-      autoPunctuation: true,
-      enableHapticFeedback: true,
-    );
-    speech.listen(
-      onResult: (SpeechRecognitionResult result) {
-        onResult(result.recognizedWords);
-      },
-      localeId: _currentLocaleId,
-      onSoundLevelChange: soundLevelListener,
-      listenOptions: options,
-    );
-  }
+//     var selectedLocale = locales[selectedLocale];
+//    _speechToText.listen(
+//        onResult: resultListener,
+//        localeId: selectedLocale.localeId,
+//        );
+//   }
 
-  void stopListening() {
-    // _logEvent('stop');
-    speech.stop();
-    level = 0.0;
-  }
+//   void startListening(Function(String) onResult) {
+//     _speechToText.listen(onResult: (result) {
+//       onResult(result.recognizedWords);
+//     });
+//   }
 
-  void cancelListening() {
-    // _logEvent('cancel');
-    speech.cancel();
-    level = 0.0;
-  }
-
-  void resultListener(SpeechRecognitionResult result) {
-    // _logEvent('Result listener final: ${result.finalResult}, words: ${result.recognizedWords}');
-    lastWords = '${result.recognizedWords} - ${result.finalResult}';
-  }
-
-  void soundLevelListener(double level) {
-    minSoundLevel = min(minSoundLevel, level);
-    maxSoundLevel = max(maxSoundLevel, level);
-    this.level = level;
-  }
-
-  void errorListener(SpeechRecognitionError error) {
-    // _logEvent('Received error status: $error, listening: ${speech.isListening}');
-    lastError = '${error.errorMsg} - ${error.permanent}';
-  }
-
-  void statusListener(String status) {
-    // _logEvent('Received listener status: $status, listening: ${speech.isListening}');
-    lastStatus = status;
-  }
-
-  // void _switchLang(selectedVal) {
-  //   _currentLocaleId = selectedVal;
-  // }
-
-  // void _logEvent(String eventDescription) {
-  //   if (_logEvents) {
-  //     var eventTime = DateTime.now().toIso8601String();
-  //     // debugPrint('$eventTime $eventDescription');
-  //   }
-  }
-
-  // void _switchLogging(bool? val) {
-  //   _logEvents = val ?? false;
-  // }
-
-  // void _switchOnDevice(bool? val) {
-  //   _onDevice = val ?? false;
-  // }
+//   void stopListening() {
+//     _speechToText.stop();
+//   }
 // }
