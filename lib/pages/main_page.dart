@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_guide_app/services/dialog_service.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../pages/login_page.dart';
 import '../pages/map_page.dart';
@@ -21,7 +22,7 @@ class MainPageState extends State<MainPage> {
     await flutterTts.setLanguage("zh-TW");
     await flutterTts.setPitch(1.0);
     await flutterTts.speak(texts);
-    await flutterTts.setVolume(1.0);
+    // await flutterTts.setVolume(1.0);
   }
 
   // login info and login success
@@ -32,8 +33,7 @@ class MainPageState extends State<MainPage> {
     });
   }
 
-
-final stt.SpeechToText _speechToText = stt.SpeechToText();
+  final stt.SpeechToText _speechToText = stt.SpeechToText();
   bool _isListening = false;
   String _text = 'Press the button and start speaking';
   List<stt.LocaleName> _locales = [];
@@ -54,7 +54,11 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
       var locales = await _speechToText.locales();
       setState(() {
         _locales = locales;
-        _selectedLocale = locales.first;
+        // 設定預設值為中文
+        _selectedLocale = _locales.firstWhere(
+          (locale) => locale.name.contains('Chinese, Traditional (Taiwan)'),
+          orElse: () => _locales.first,
+        );
       });
     }
   }
@@ -66,7 +70,7 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
   }
 
   void _errorListener(SpeechRecognitionError error) {
-    print('Error: $error');
+    DialogService.showErrorDialog(context,'Error: $error');
   }
 
   void _resultListener(SpeechRecognitionResult result) {
@@ -86,11 +90,8 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
     _speechToText.stop();
   }
 
-
-
-
   // controller for source and destination
-  final sourceController = TextEditingController();
+  final sourceController = TextEditingController(text: '現在位置');
   final destinationController = TextEditingController();
 
   @override
@@ -132,7 +133,7 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           const Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(12.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
@@ -158,7 +159,7 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
@@ -166,9 +167,11 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
                     child: Center(
                   child: TextField(
                     controller: sourceController,
+
                     decoration: InputDecoration(
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
                       hintText: 'Enter Source Location here',
+                      
                     ),
                   ),
                 )),
@@ -187,7 +190,7 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
@@ -214,7 +217,7 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
                   child: ElevatedButton(
                     child: const Text('Search'),
                     onPressed: () {
-                      _speak('search');
+                      // _speak('search');
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -264,9 +267,8 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
                               destination: destinationController.text,
                             )));
               }),
-
           Padding(
-            padding:  const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             child: DropdownButton<stt.LocaleName>(
               value: _selectedLocale,
               onChanged: (stt.LocaleName? newValue) {
@@ -294,11 +296,15 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(32.0),
+            padding: const EdgeInsets.all(10.0),
             child: FloatingActionButton(
               tooltip: 'microphone',
               onPressed: () {
-                _isListening ? _stopListening : _startListening;
+                if (_isListening) {
+                  _stopListening();
+                } else {
+                  _startListening();
+                }
               },
               backgroundColor: Colors.white,
               child: Icon(_isListening ? Icons.mic : Icons.mic_off),
@@ -306,9 +312,6 @@ final stt.SpeechToText _speechToText = stt.SpeechToText();
           ),
         ],
       ),
-
-          
-
     );
   }
 }

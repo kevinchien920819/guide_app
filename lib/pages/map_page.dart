@@ -8,6 +8,7 @@ import '../constants/constants.dart'; // Project constants
 import '../services/location_service.dart'; // Location service
 import '../services/dialog_service.dart'; // Dialog service
 import '../services/polyline_service.dart'; // Polyline service
+import 'navigation_page.dart';
 
 class MapPage extends StatefulWidget {
   final String source; // Source address
@@ -48,6 +49,19 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // appBar: AppBar(
+      //         title: Text('Map Page'),
+      //         actions: [
+      //           IconButton(
+      //             icon: Icon(Icons.navigation),
+      //             onPressed: () {
+      //               if (_sourceLocation != null && _destinationLocation != null) {
+                        
+      //               }
+      //             },
+      //           ),
+      //         ],
+      //       ),
       body: _currentP == null || _sourceLocation == null || _destinationLocation == null
           ? const Center(child: CircularProgressIndicator()) // Show progress indicator if locations are not yet available
           : GoogleMap(
@@ -58,14 +72,17 @@ class _MapPageState extends State<MapPage> {
                 target: _sourceLocation!,
                 zoom: 12.0, // Set initial camera position to the source location
               ),
+              // myLocationButtonEnabled: false, // Disable the location button
+              myLocationEnabled: true, // Enable the location button
               markers: {
-                if (_currentP != null)
-                  Marker(
-                    markerId: const MarkerId('_currentLocation'),
-                    position: _currentP!,
-                    icon: customIcon ?? BitmapDescriptor.defaultMarker,
-                    infoWindow: const InfoWindow(title: 'Current Location'),
-                  ),
+                // because google map provide my location button so disable it
+                // if (_currentP != null)
+                  // Marker(
+                  //   markerId: const MarkerId('_currentLocation'),
+                  //   position: _currentP!,
+                  //   icon: customIcon ?? BitmapDescriptor.defaultMarker,
+                  //   infoWindow: const InfoWindow(title: 'Current Location'),
+                  // ),
                 if (_sourceLocation != null)
                   Marker(
                     markerId: const MarkerId('_sourceLocation'),
@@ -83,19 +100,40 @@ class _MapPageState extends State<MapPage> {
               },
               polylines: Set<Polyline>.of(polylines.values), // Add polylines to the map
             ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: FloatingActionButton.extended(
+              onPressed: () {
+                if (_sourceLocation != null && _destinationLocation != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SampleNavigationApp(
+                        // source: widget.source,
+                        // destination: widget.destination,
+                        sourceLocationlat: _sourceLocation!.latitude,
+                        sourceLocationlon: _sourceLocation!.longitude,
+                        destinationLocationlat: _destinationLocation!.latitude,
+                        destinationLocationlon: _destinationLocation!.longitude,
+                      ),
+                    ),
+                  );
+                }
+              },
+              label: const Text('Navigate'),
+              icon: const Icon(Icons.navigation),
+            )
     );
   }
 
   // Move camera to the specified position
-  // ignore: unused_element
-  Future<void> _cameraToPosition(LatLng pos) async {
-    final GoogleMapController controller = await _mapController.future;
-    CameraPosition newCameraPosition = CameraPosition(
-      target: pos,
-      zoom: 13.0,
-    );
-    await controller.animateCamera(CameraUpdate.newCameraPosition(newCameraPosition));
-  }
+  // Future<void> _cameraToPosition(LatLng pos) async {
+  //   final GoogleMapController controller = await _mapController.future;
+  //   CameraPosition newCameraPosition = CameraPosition(
+  //     target: pos,
+  //     zoom: 13.0,
+  //   );
+  //   await controller.animateCamera(CameraUpdate.newCameraPosition(newCameraPosition));
+  // }
 
   // Get latitude and longitude from address
   Future<void> _getLatLngFromAddress(String address, bool isSource) async {
@@ -122,7 +160,6 @@ class _MapPageState extends State<MapPage> {
         );
       });
     } else {
-      // ignore: use_build_context_synchronously
       DialogService.showErrorDialog(context, 'Error: ${json['error_message']}');
     }
   }
@@ -132,8 +169,6 @@ class _MapPageState extends State<MapPage> {
     LocationService.getLocationUpdates(_locationController, (LatLng position) {
       setState(() {
         _currentP = position; // Update current location
-        //TODO: Uncomment the following line to move the camera to the current location
-        // _cameraToPosition(_currentP!);
       });
     });
   }
