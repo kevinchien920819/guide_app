@@ -18,6 +18,17 @@ class MainPage extends StatefulWidget {
 class MainPageState extends State<MainPage> {
   // Flutter tts service 
   final FlutterTts flutterTts = FlutterTts();
+  void inittts(){
+    flutterTts.getVoices.then((voices) {
+      List<dynamic> languages = List<dynamic>.from(voices);
+        languages = languages.where((languages) => languages["locale"].contains("zh")).toList();
+      print(languages);
+      setState(() {
+        var _currentVoice = languages.first;
+      });
+      flutterTts.setVoice({"name":languages.first["name"],"locale":languages.first["locale"]});
+    });
+  }
   void _speak(String texts) async {
     await flutterTts.setLanguage("zh-TW");
     await flutterTts.setPitch(1.0);
@@ -43,6 +54,7 @@ class MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _initSpeechToText();
+    inittts();
   }
 
   void _initSpeechToText() async {
@@ -74,12 +86,11 @@ class MainPageState extends State<MainPage> {
   }
 
   void _resultListener(SpeechRecognitionResult result) {
-    setState(() {
       _text = result.recognizedWords;
-    });
   }
 
   void _startListening() {
+    _text = "";
     _speechToText.listen(
       onResult: _resultListener,
       localeId: _selectedLocale!.localeId,
@@ -88,6 +99,9 @@ class MainPageState extends State<MainPage> {
 
   void _stopListening() {
     _speechToText.stop();
+    if(_isListening == false){
+        _speak("說了$_text");
+    }
   }
 
   // controller for source and destination
@@ -301,8 +315,11 @@ class MainPageState extends State<MainPage> {
               tooltip: 'microphone',
               onPressed: () {
                 if (_isListening) {
+                  _isListening = false;
                   _stopListening();
+                  
                 } else {
+                  _isListening = true;
                   _startListening();
                 }
               },

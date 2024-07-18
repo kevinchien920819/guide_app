@@ -33,18 +33,22 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
-    _setCustomMarker(); // Set custom marker icon
+    // _setCustomMarker(); // Set custom marker icon
     _getLatLngFromAddress(widget.source, true); // Get source location
     _getLatLngFromAddress(widget.destination, false); // Get destination location
   }
 
+  // @override 
+  // void dispose() {
+  //   super.dispose();
+  // }
   // Set custom marker icon
-  void _setCustomMarker() async {
-    customIcon = await BitmapDescriptor.asset(
-      const ImageConfiguration(size: Size(20, 20)),
-      'assets/user_location.png',
-    );
-  }
+  // void _setCustomMarker() async {
+  //   customIcon = await BitmapDescriptor.asset(
+  //     const ImageConfiguration(size: Size(20, 20)),
+  //     'assets/user_location.png',
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
