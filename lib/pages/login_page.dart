@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'login_bloc.dart';
-import 'register_page.dart'; // Import RegisterScreen
+import 'package:get/get.dart';
+import '../controllers/login_controller.dart';
+import 'register_page.dart';
 
 class LoginScreen extends StatelessWidget {
-  final VoidCallback onLoginSuccess;
-
-  const LoginScreen({super.key, required this.onLoginSuccess});
+  final LoginController loginController = Get.put(LoginController());
 
   @override
   Widget build(BuildContext context) {
@@ -15,98 +13,58 @@ class LoginScreen extends StatelessWidget {
         title: const Text('Login Screen'),
       ),
       body: Center(
-        child: BlocProvider(
-          create: (context) => LoginBloc(),
-          child: LoginForm(onLoginSuccess: onLoginSuccess),
+        child: Padding(
+          padding: const EdgeInsets.all(30.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextField(
+                controller: loginController.emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  prefixIcon: const Icon(Icons.mail_outline_rounded),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: loginController.passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Obx(() => loginController.isLoading.value
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: loginController.login,
+                      child: const Text('Login'),
+                    )),
+              Obx(() {
+                if (loginController.errorMessage.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      loginController.errorMessage.value,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                } else {
+                  return const SizedBox.shrink();
+                }
+              }),
+              TextButton(
+                onPressed: () {
+                  Get.to(() => const RegisterScreen());
+                },
+                child: const Text('Don\'t have an account? Register first'),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class LoginForm extends StatelessWidget {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final VoidCallback onLoginSuccess;
-
-  LoginForm({super.key, required this.onLoginSuccess});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocListener<LoginBloc, LoginState>(
-      listener: (context, state) {
-        if (state is LoginFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(state.error),
-            backgroundColor: Colors.red,
-          ));
-        } else if (state is LoginSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content:  Text('Login Successful'),
-            backgroundColor: Colors.green,
-          ));
-          onLoginSuccess();
-          Navigator.pop(context);
-        }
-      },
-      child: BlocBuilder<LoginBloc, LoginState>(
-        builder: (context, state) {
-          return Padding(
-            padding: const EdgeInsets.all(30.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextField(
-                  controller: _emailController,
-                  decoration:  InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    prefixIcon: const Icon(Icons.mail_outline_rounded),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: state is! LoginLoading
-                      ? () {
-                          context.read<LoginBloc>().add(
-                                LoginButtonPressed(
-                                  email: _emailController.text,
-                                  password: _passwordController.text,
-                                ),
-                              );
-                        }
-                      : null,
-                  child: const Text('Login'),
-                ),
-                if (state is LoginLoading)
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                    );
-                  },
-                  child: const Text('Don\'t have an account? Register first'),
-                ),
-              ],
-            ),
-          );
-        },
       ),
     );
   }

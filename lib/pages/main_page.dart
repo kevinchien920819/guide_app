@@ -1,119 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_guide_app/services/dialog_service.dart';
+import 'package:get/get.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import '../pages/login_page.dart';
-import '../pages/map_page.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_recognition_error.dart';
+import '../controllers/login_controller.dart';
+import '../controllers/speech_controller.dart';
+import 'login_page.dart';
+import 'map_page.dart';
 import '../components/optionbutton.dart';
 
-class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+class MainPage extends StatelessWidget {
+  MainPage({super.key});
 
-  @override
-  MainPageState createState() => MainPageState();
-}
-
-class MainPageState extends State<MainPage> {
-  // Flutter tts service 
+  final loginController = Get.put(LoginController());
+  final speechController = Get.put(SpeechController());
   final FlutterTts flutterTts = FlutterTts();
-  void inittts(){
-    flutterTts.getVoices.then((voices) {
-      List<dynamic> languages = List<dynamic>.from(voices);
-        languages = languages.where((languages) => languages["locale"].contains("zh")).toList();
-      print(languages);
-      setState(() {
-        var _currentVoice = languages.first;
-      });
-      flutterTts.setVoice({"name":languages.first["name"],"locale":languages.first["locale"]});
-    });
-  }
-  void _speak(String texts) async {
-    await flutterTts.setLanguage("zh-TW");
-    await flutterTts.setPitch(1.0);
-    await flutterTts.speak(texts);
-    // await flutterTts.setVolume(1.0);
-  }
 
-  // login info and login success
-  bool _isLoggedIn = false; // 檢查是否登入
-  void _loginSuccess() {
-    setState(() {
-      _isLoggedIn = true;
-    });
-  }
-
-  final stt.SpeechToText _speechToText = stt.SpeechToText();
-  bool _isListening = false;
-  String _text = 'Press the button and start speaking';
-  List<stt.LocaleName> _locales = [];
-  stt.LocaleName? _selectedLocale;
-
-  @override
-  void initState() {
-    super.initState();
-    _initSpeechToText();
-    inittts();
-  }
-
-  void _initSpeechToText() async {
-    bool available = await _speechToText.initialize(
-      onStatus: _statusListener,
-      onError: _errorListener,
-    );
-    if (available) {
-      var locales = await _speechToText.locales();
-      setState(() {
-        _locales = locales;
-        // 設定預設值為中文
-        _selectedLocale = _locales.firstWhere(
-          (locale) => locale.name.contains('Chinese, Traditional (Taiwan)'),
-          orElse: () => _locales.first,
-        );
-      });
+  void _speak(String text) async {
+    try {
+      await flutterTts.setLanguage('zh-TW');
+      await flutterTts.setPitch(1.0);
+      await flutterTts.speak(text);
+    } catch (e) {
+      print("TTS Error: $e");
     }
-  }
-
-  void _statusListener(String status) {
-    setState(() {
-      _isListening = _speechToText.isListening;
-    });
-  }
-
-  void _errorListener(SpeechRecognitionError error) {
-    DialogService.showErrorDialog(context,'Error: $error');
-  }
-
-  void _resultListener(SpeechRecognitionResult result) {
-      _text = result.recognizedWords;
-  }
-
-  void _startListening() {
-    _text = "";
-    _speechToText.listen(
-      onResult: _resultListener,
-      localeId: _selectedLocale!.localeId,
-    );
-  }
-
-  void _stopListening() {
-    _speechToText.stop();
-    if(_isListening == false){
-        _speak("說了$_text");
-    }
-  }
-
-  // controller for source and destination
-  final sourceController = TextEditingController(text: '現在位置');
-  final destinationController = TextEditingController();
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    sourceController.dispose();
-    destinationController.dispose();
-    super.dispose();
   }
 
   @override
@@ -125,19 +34,12 @@ class MainPageState extends State<MainPage> {
             icon: const Icon(Icons.account_circle),
             iconSize: 50,
             onPressed: () {
-              if (_isLoggedIn) {
+              if (loginController.isLoggedIn.value) {
                 ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Already logged in')));
-                _speak('you have already logged in');
+                _speak('你已經登入了');
               } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LoginScreen(
-                      onLoginSuccess: _loginSuccess,
-                    ),
-                  ),
-                );
+                Get.to(() => LoginScreen());
               }
             },
           ),
@@ -148,183 +50,121 @@ class MainPageState extends State<MainPage> {
         children: <Widget>[
           const Padding(
             padding: EdgeInsets.all(12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                    child: Center(
-                  child: Text(
-                    'Where do you want to go ?',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                )),
-              ],
+            child: Text(
+              'Where do you want to go?',
+              style: TextStyle(fontSize: 20),
+              textAlign: TextAlign.center,
             ),
           ),
           const Padding(
             padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                  child: Text("Source Location"),
-                ),
-              ],
-            ),
+            child: Text("Source Location"),
           ),
           Padding(
             padding: const EdgeInsets.all(10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                    child: Center(
-                  child: TextField(
-                    controller: sourceController,
-
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-                      hintText: 'Enter Source Location here',
-                      
-                    ),
-                  ),
-                )),
-              ],
+            child: TextField(
+              controller: speechController.sourceController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                hintText: 'Enter Source Location here',
+              ),
             ),
           ),
           const Padding(
             padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                  child: Text("Destination Location"),
-                ),
-              ],
-            ),
+            child: Text("Destination Location"),
           ),
           Padding(
             padding: const EdgeInsets.all(10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                  child: Center(
-                    child: TextField(
-                      controller: destinationController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-                        hintText: 'Enter Destination Location here',
-                      ),
-                    ),
-                  ),
+            child: TextField(
+              controller: speechController.destinationController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
                 ),
-              ],
+                hintText: 'Enter Destination Location here',
+              ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Center(
-                  child: ElevatedButton(
-                    child: const Text('Search'),
-                    onPressed: () {
-                      // _speak('search');
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => MapPage(
-                                    source: sourceController.text,
-                                    destination: destinationController.text,
-                                  )));
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          OptionButton(
-              label: 'Home',
-              onTap: () {
-                _speak('home');
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MapPage(
-                              source: sourceController.text,
-                              destination: destinationController.text,
-                            )));
-              }),
-          OptionButton(
-              label: 'Work place',
-              onTap: () {
-                _speak('work');
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MapPage(
-                              source: sourceController.text,
-                              destination: destinationController.text,
-                            )));
-              }),
-          OptionButton(
-              label: 'Saved place',
-              onTap: () {
-                _speak('save place');
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MapPage(
-                              source: sourceController.text,
-                              destination: destinationController.text,
-                            )));
-              }),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<stt.LocaleName>(
-              value: _selectedLocale,
-              onChanged: (stt.LocaleName? newValue) {
-                setState(() {
-                  _selectedLocale = newValue;
-                });
+            child: ElevatedButton(
+              child: const Text('Search'),
+              onPressed: () {
+                Get.to(() => MapPage(
+                  source: speechController.sourceController.text,
+                  destination: speechController.destinationController.text,
+                ));
               },
-              items: _locales.map<DropdownMenuItem<stt.LocaleName>>((stt.LocaleName locale) {
-                return DropdownMenuItem<stt.LocaleName>(
-                  value: locale,
-                  child: Text(locale.name),
-                );
-              }).toList(),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Expanded(
-              child: Center(
-                child: Text(
-                  _isListening ? 'Listening...' : _text,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
+          OptionButton(
+            label: 'Home',
+            onTap: () {
+              _speak('home');
+              Get.to(() => MapPage(
+                source: speechController.sourceController.text,
+                destination: speechController.destinationController.text,
+              ));
+            },
           ),
+          OptionButton(
+            label: 'Work place',
+            onTap: () {
+              _speak('work');
+              Get.to(() => MapPage(
+                source: speechController.sourceController.text,
+                destination: speechController.destinationController.text,
+              ));
+            },
+          ),
+          OptionButton(
+            label: 'Saved place',
+            onTap: () {
+              _speak('save place');
+              Get.to(() => MapPage(
+                source: speechController.sourceController.text,
+                destination: speechController.destinationController.text,
+              ));
+            },
+          ),
+          Obx(() => DropdownButton<stt.LocaleName>(
+            value: speechController.selectedLocale.value,
+            onChanged: (stt.LocaleName? newValue) {
+              speechController.selectedLocale.value = newValue!;
+            },
+            items: speechController.locales
+                .map<DropdownMenuItem<stt.LocaleName>>(
+                    (stt.LocaleName locale) {
+                  return DropdownMenuItem<stt.LocaleName>(
+                    value: locale,
+                    child: Text(locale.name),
+                  );
+                }).toList(),
+          )),
+          Obx(() => Text(
+            speechController.isListening.value
+                ? 'Listening...'
+                : speechController.text.value,
+            textAlign: TextAlign.center,
+          )),
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: FloatingActionButton(
               tooltip: 'microphone',
               onPressed: () {
-                if (_isListening) {
-                  _isListening = false;
-                  _stopListening();
-                  
+                if (speechController.isListening.value) {
+                  speechController.stopListening();
                 } else {
-                  _isListening = true;
-                  _startListening();
+                  speechController.startListening();
                 }
               },
               backgroundColor: Colors.white,
-              child: Icon(_isListening ? Icons.mic : Icons.mic_off),
+              child: Icon(speechController.isListening.value
+                  ? Icons.mic
+                  : Icons.mic_off),
             ),
           ),
         ],

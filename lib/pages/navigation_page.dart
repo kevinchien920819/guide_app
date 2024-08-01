@@ -1,7 +1,4 @@
-// ignore_for_file: unused_field
-
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 
@@ -11,40 +8,29 @@ class SampleNavigationApp extends StatefulWidget {
   final double destinationLocationlat;
   final double destinationLocationlon;
 
-  const SampleNavigationApp(
-      {super.key,
-      required this.sourceLocationlat,
-      required this.sourceLocationlon,
-      required this.destinationLocationlat,
-      required this.destinationLocationlon});
+  const SampleNavigationApp({
+    super.key,
+    required this.sourceLocationlat,
+    required this.sourceLocationlon,
+    required this.destinationLocationlat,
+    required this.destinationLocationlon,
+  });
 
   @override
   State<SampleNavigationApp> createState() => _SampleNavigationAppState();
 }
 
 class _SampleNavigationAppState extends State<SampleNavigationApp> {
-  final home =
-      WayPoint(name: "Start", latitude: 0.0, longitude: 0.0, isSilent: false);
+  final WayPoint home = WayPoint(name: "Start", latitude: 0.0, longitude: 0.0, isSilent: false);
+  final WayPoint store = WayPoint(name: "End", latitude: 0.0, longitude: 0.0, isSilent: false);
 
-  final store =
-      WayPoint(name: "End", latitude: 0.0, longitude: 0.0, isSilent: false);
-
-  final bool _isMultipleStop = false;
   MapBoxNavigationViewController? _controller;
-
-  bool _routeBuilt = false;
-  bool _isNavigating = false;
   late MapBoxOptions _navigationOption;
 
   @override
   void initState() {
     super.initState();
-    home.latitude = widget.sourceLocationlat;
-    home.longitude = widget.sourceLocationlon;
-    store.latitude = widget.destinationLocationlat;
-    store.longitude = widget.destinationLocationlon;
-
-    initialize();
+    _setupNavigation();
   }
 
   @override
@@ -53,153 +39,69 @@ class _SampleNavigationAppState extends State<SampleNavigationApp> {
     super.dispose();
   }
 
-  Future<void> initialize() async {
-    if (!mounted) return;
+  void _setupNavigation() {
+    home.latitude = widget.sourceLocationlat;
+    home.longitude = widget.sourceLocationlon;
+    store.latitude = widget.destinationLocationlat;
+    store.longitude = widget.destinationLocationlon;
 
-    _navigationOption = MapBoxNavigation.instance.getDefaultOptions();
-    _navigationOption.simulateRoute = true;
-    _navigationOption.language = "zh-TW";
+    _navigationOption = MapBoxOptions(
+      mode: MapBoxNavigationMode.driving,
+      simulateRoute: true,
+      language: "en",
+      allowsUTurnAtWayPoints: true,
+      units: VoiceUnits.metric,
+    );
 
-    // setState(() {
-    //   var wayPoints = <WayPoint>[];
-    //   wayPoints.add(home);
-    //   wayPoints.add(store);
-    //   // print(wayPoints);
-    //   _isMultipleStop = wayPoints.length > 2;
-    //   _controller?.buildRoute(wayPoints: wayPoints, options: _navigationOption);
-    //   _controller?.startNavigation();
-    // });
-    MapBoxNavigation.instance.registerRouteEventListener(_onEmbeddedRouteEvent);
-
+    MapBoxNavigation.instance.registerRouteEventListener(_onRouteEvent);
+    _startNavigation();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: Center(
-          child: Column(
-            children: <Widget>[
-              // Expanded(
-              //   child: SingleChildScrollView(
-              //     child: Column(
-              //       children: [
-              //         const SizedBox(height: 10),
-              //         Row(
-              //           mainAxisAlignment: MainAxisAlignment.center,
-              //           children: [
-              //             ElevatedButton(
-              //               onPressed:
-              //               child: Text(_routeBuilt && !_isNavigating
-              //                   ? "Clear Route"
-              //                   : "Build Route"),
-              //             ),
-              //             const SizedBox(width: 10),
-              //             ElevatedButton(
-              //               onPressed:
-              //               child: const Text('Start '),
-              //             ),
-              //             const SizedBox(width: 10),
-              //             ElevatedButton(
-              //               onPressed: _isNavigating
-              //                   ? () {
-              //                       _controller?.finishNavigation();
-              //                     }
-              //                   : null,
-              //               child: const Text('Cancel '),
-              //             )
-              //           ],
-              //         ),
-              //         const Center(
-              //           child: Padding(
-              //             padding: EdgeInsets.all(10),
-              //             child: Text(
-              //               "Long-Press Embedded Map to Set Destination",
-              //               textAlign: TextAlign.center,
-              //             ),
-              //           ),
-              //         ),
-              //         const Divider()
-              //       ],
-              //     ),
-              //   ),
-              // ),
-              SizedBox(
-                height: 600,
-                child: Container(
-                  color: Colors.grey,
-                  child: MapBoxNavigationView(
-                      options: _navigationOption,
-                      onRouteEvent: _onEmbeddedRouteEvent,
-                      onCreated:
-                          (MapBoxNavigationViewController controller) async {
-                        _controller = controller;
-                        _controller?.initialize();
-
-                        var wayPoints = <WayPoint>[];
-                        wayPoints.add(home);
-                        wayPoints.add(store);
-                        MapBoxNavigation.instance.startNavigation(
-                                wayPoints: wayPoints,
-                                options: MapBoxOptions(
-                                    mode: MapBoxNavigationMode.driving,
-                                    simulateRoute: false,
-                                    language: "zh-TW",
-                                    allowsUTurnAtWayPoints: true,
-                                    units: VoiceUnits.metric));
-                      }),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
+  void _startNavigation() {
+    var wayPoints = <WayPoint>[home, store];
+    MapBoxNavigation.instance.startNavigation(
+      wayPoints: wayPoints,
+      options: _navigationOption,
     );
   }
 
-  Future<void> _onEmbeddedRouteEvent(e) async {
+  Future<void> _onRouteEvent(RouteEvent e) async {
     switch (e.eventType) {
       case MapBoxEvent.progress_change:
-        var progressEvent = e.data as RouteProgressEvent;
-        if (progressEvent.currentStepInstruction != null) {}
+        // 處理進度變更事件
         break;
       case MapBoxEvent.route_building:
+        // 處理路線構建事件
+        break;
       case MapBoxEvent.route_built:
-        setState(() {
-          _routeBuilt = true;
-        });
+        // 處理路線已構建事件
         break;
       case MapBoxEvent.route_build_failed:
-        setState(() {
-          _routeBuilt = false;
-        });
+        // 處理路線構建失敗事件
         break;
       case MapBoxEvent.navigation_running:
-        setState(() {
-          _isNavigating = true;
-        });
+        // 處理導航進行中事件
         break;
       case MapBoxEvent.on_arrival:
-        if (!_isMultipleStop) {
-          await Future.delayed(const Duration(seconds: 3));
-          await _controller?.finishNavigation();
-        } else {}
+        // 處理到達事件
+        await Future.delayed(const Duration(seconds: 3));
+        await MapBoxNavigation.instance.finishNavigation();
         break;
       case MapBoxEvent.navigation_finished:
       case MapBoxEvent.navigation_cancelled:
-        setState(() {
-          _routeBuilt = false;
-          _isNavigating = false;
-
-        });
+        // 處理導航完成或取消事件
+        await MapBoxNavigation.instance.finishNavigation();
         Navigator.pop(context);
         break;
       default:
         break;
     }
-    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      // 如果需要顯示 UI，可以在這裡構建視圖
+    );
   }
 }
