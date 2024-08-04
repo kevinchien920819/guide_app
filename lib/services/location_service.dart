@@ -35,4 +35,27 @@ class LocationService {
   static void stopLocationUpdates() {
     _locationSubscription?.cancel();
   }
+
+  static Future<LocationData> getCurrentLocation(Location locationController) async {
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+
+    serviceEnabled = await locationController.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await locationController.requestService();
+      if (!serviceEnabled) {
+        return Future.error('Location service is disabled');
+      }
+    }
+
+    permissionGranted = await locationController.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await locationController.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        return Future.error('Location permission is denied');
+      }
+    }
+
+    return await locationController.getLocation();
+  }
 }

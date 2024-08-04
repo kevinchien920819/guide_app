@@ -9,7 +9,9 @@ class SpeechController extends GetxController {
   var selectedLocale = stt.LocaleName('en_US', 'English').obs;
   var locales = <stt.LocaleName>[].obs;
 
-  final TextEditingController sourceController = TextEditingController();
+  final TextEditingController sourceController = TextEditingController(
+    text: '現在位置',
+  );
   final TextEditingController destinationController = TextEditingController();
 
   @override
