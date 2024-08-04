@@ -33,7 +33,16 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
-    _getLatLngFromAddress(widget.source, true);
+    // TODO: 現在位置的經緯度獲取
+    if(widget.source == '現在位置') {
+      LocationService.getCurrentLocation(_locationController).then((LocationData value) {
+          _sourceLocation = LatLng(value.latitude!, value.longitude!);
+      });
+    } else {
+      _getLatLngFromAddress(widget.source, true);
+    }
+
+    // _getLatLngFromAddress(widget.source, true);
     _getLatLngFromAddress(widget.destination, false);
   }
 
