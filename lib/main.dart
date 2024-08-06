@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_guide_app/pages/main_page.dart';
+// import 'package:flutter_guide_app/pages/route_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home:  MainPage(),
+      // home: const RoutePage(),
     );
   }
 }
