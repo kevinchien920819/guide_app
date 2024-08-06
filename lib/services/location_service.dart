@@ -63,12 +63,22 @@ class LocationService {
   }
 
   // TODO: get instruction from location using mapbox API
-  static Future<List<String>?> getInstructions(LatLng origin, LatLng destination,String mode) async {
-    // using mapbox API to get instructions
-    final String url = 'https://api.mapbox.com/directions/v5/mapbox/$mode/$origin;$destination?geometries=geojson&access_token=${Constants.mapboxApiKey}';
+static Future<List<String>> getInstructions(LatLng origin, LatLng destination, String mode) async {
+    final String url =
+        'https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=$mode&key=${Constants.googleApiKey}';
+    
     final response = await http.get(Uri.parse(url));
-    final json = jsonDecode(response.body);
-    // TODO: parse the json to get instructions
-    return instructions;
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List steps = data['routes'][0]['legs'][0]['steps'];
+      return steps.map((step) => _removeHtmlTags(step['html_instructions'].toString())).toList();
+    } else {
+      throw Exception('Failed to load directions');
+    }
+  }
+
+  static String _removeHtmlTags(String htmlText) {
+    RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+    return htmlText.replaceAll(exp, '');
   }
 }
