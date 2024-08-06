@@ -2,13 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 
-class SampleNavigationApp extends StatefulWidget {
+class NavigationPage extends StatefulWidget {
   final double sourceLocationlat;
   final double sourceLocationlon;
   final double destinationLocationlat;
   final double destinationLocationlon;
 
-  const SampleNavigationApp({
+  const NavigationPage({
     super.key,
     required this.sourceLocationlat,
     required this.sourceLocationlon,
@@ -17,10 +17,10 @@ class SampleNavigationApp extends StatefulWidget {
   });
 
   @override
-  State<SampleNavigationApp> createState() => _SampleNavigationAppState();
+  State<NavigationPage> createState() => _NavigationPageState();
 }
 
-class _SampleNavigationAppState extends State<SampleNavigationApp> {
+class _NavigationPageState extends State<NavigationPage> {
   final WayPoint home = WayPoint(name: "Start", latitude: 0.0, longitude: 0.0, isSilent: false);
   final WayPoint store = WayPoint(name: "End", latitude: 0.0, longitude: 0.0, isSilent: false);
 
