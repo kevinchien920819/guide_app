@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+  import 'package:flutter_guide_app/pages/main_page.dart';
 import 'package:get/get.dart';
+import 'package:mysql1/mysql1.dart';
+import '../databases/db_helper.dart';
 
 class LoginController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-
   var isLoading = false.obs;
   var errorMessage = ''.obs;
   var isLoggedIn = false.obs;
@@ -16,22 +18,31 @@ class LoginController extends GetxController {
     super.onClose();
   }
 
-  void login() {
+  Future<void> login() async {
     isLoading.value = true;
-    errorMessage.value = '';
+    String email = emailController.text;
+    String password = passwordController.text;
 
-    // 模拟登录请求
-    Future.delayed(const Duration(seconds: 2), () {
-      if (emailController.text == 'test' && passwordController.text == '123') {
-        isLoading.value = false;
-        isLoggedIn.value = true;
-        Get.snackbar('Success', 'Login successful', backgroundColor: Colors.green);
-        Get.offAllNamed('/home'); // 导航到主页
+    try {
+      DbHelper dbHelper = DbHelper();
+      Results userResults = await dbHelper.getUser(email);
+
+      if (userResults.isNotEmpty) {
+        var user = userResults.first;
+        if (user['password'] == password) {
+          // 登錄成功，導航到個人化頁面
+          isLoggedIn.value = true;
+          Get.offAll(() => MainPage());
+        } else {
+          errorMessage.value = 'Incorrect password';
+        }
       } else {
-        isLoading.value = false;
-        errorMessage.value = 'Invalid email or password';
-        Get.snackbar('Error', errorMessage.value, backgroundColor: Colors.red);
+        errorMessage.value = 'User not found';
       }
-    });
+    } catch (e) {
+      errorMessage.value = 'An error occurred';
+    } finally {
+      isLoading.value = false;
+    }
   }
 }
