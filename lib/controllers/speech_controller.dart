@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter/material.dart';
+import '../services/dialog_service.dart';
 
 class SpeechController extends GetxController {
   final stt.SpeechToText speechToText = stt.SpeechToText();
@@ -40,7 +41,8 @@ class SpeechController extends GetxController {
 
   void _errorListener(dynamic error) {
     // 处理错误的逻辑
-    print('Error: $error');
+    // print('Error: $error');
+    DialogService.showErrorDialog(Get.overlayContext!, error.toString());
   }
 
   void startListening() {

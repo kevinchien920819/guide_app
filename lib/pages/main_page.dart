@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import '../services/dialog_service.dart';
 import '../controllers/login_controller.dart';
 import '../controllers/speech_controller.dart';
+import '../components/optionbutton.dart';
 import 'login_page.dart';
 import 'map_page.dart';
-import '../components/optionbutton.dart';
 
 class MainPage extends StatelessWidget {
   MainPage({super.key});
@@ -20,8 +21,13 @@ class MainPage extends StatelessWidget {
       await flutterTts.setLanguage('zh-TW');
       await flutterTts.setPitch(1.0);
       await flutterTts.speak(text);
+      // TODO:Check this is available 
+      await flutterTts.setIosAudioCategory(
+          IosTextToSpeechAudioCategory.playback,
+          [IosTextToSpeechAudioCategoryOptions.defaultToSpeaker]);
     } catch (e) {
-      print("TTS Error: $e");
+      // prindit("TTS Error: $e");
+      DialogService.showErrorDialog(Get.overlayContext!, e.toString());
     }
   }
 
@@ -39,7 +45,7 @@ class MainPage extends StatelessWidget {
                     const SnackBar(content: Text('Already logged in')));
                 _speak('你已經登入了');
               } else {
-                Get.to(() => LoginScreen());
+                Get.to(() => const LoginScreen());
               }
             },
           ),
@@ -94,9 +100,9 @@ class MainPage extends StatelessWidget {
               child: const Text('Search'),
               onPressed: () {
                 Get.to(() => MapPage(
-                  source: speechController.sourceController.text,
-                  destination: speechController.destinationController.text,
-                ));
+                      source: speechController.sourceController.text,
+                      destination: speechController.destinationController.text,
+                    ));
               },
             ),
           ),
@@ -105,9 +111,9 @@ class MainPage extends StatelessWidget {
             onTap: () {
               _speak('home');
               Get.to(() => MapPage(
-                source: speechController.sourceController.text,
-                destination: speechController.destinationController.text,
-              ));
+                    source: speechController.sourceController.text,
+                    destination: speechController.destinationController.text,
+                  ));
             },
           ),
           OptionButton(
@@ -115,9 +121,9 @@ class MainPage extends StatelessWidget {
             onTap: () {
               _speak('work');
               Get.to(() => MapPage(
-                source: speechController.sourceController.text,
-                destination: speechController.destinationController.text,
-              ));
+                    source: speechController.sourceController.text,
+                    destination: speechController.destinationController.text,
+                  ));
             },
           ),
           OptionButton(
@@ -125,31 +131,31 @@ class MainPage extends StatelessWidget {
             onTap: () {
               _speak('save place');
               Get.to(() => MapPage(
-                source: speechController.sourceController.text,
-                destination: speechController.destinationController.text,
-              ));
+                    source: speechController.sourceController.text,
+                    destination: speechController.destinationController.text,
+                  ));
             },
           ),
           Obx(() => DropdownButton<stt.LocaleName>(
-            value: speechController.selectedLocale.value,
-            onChanged: (stt.LocaleName? newValue) {
-              speechController.selectedLocale.value = newValue!;
-            },
-            items: speechController.locales
-                .map<DropdownMenuItem<stt.LocaleName>>(
-                    (stt.LocaleName locale) {
+                value: speechController.selectedLocale.value,
+                onChanged: (stt.LocaleName? newValue) {
+                  speechController.selectedLocale.value = newValue!;
+                },
+                items: speechController.locales
+                    .map<DropdownMenuItem<stt.LocaleName>>(
+                        (stt.LocaleName locale) {
                   return DropdownMenuItem<stt.LocaleName>(
                     value: locale,
                     child: Text(locale.name),
                   );
                 }).toList(),
-          )),
+              )),
           Obx(() => Text(
-            speechController.isListening.value
-                ? 'Listening...'
-                : speechController.text.value,
-            textAlign: TextAlign.center,
-          )),
+                speechController.isListening.value
+                    ? 'Listening...'
+                    : speechController.text.value,
+                textAlign: TextAlign.center,
+              )),
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: FloatingActionButton(

@@ -38,10 +38,11 @@ class RouteForm extends StatefulWidget {
   const RouteForm({super.key, required this.origin, required this.destination, required this.mode});
 
   @override
-  _RouteFormState createState() => _RouteFormState();
+  RouteFormState createState() => RouteFormState();
 }
 
-class _RouteFormState extends State<RouteForm> {
+class RouteFormState extends State<RouteForm> {
+
   List<String> instructions = [];
 
   @override
@@ -52,9 +53,13 @@ class _RouteFormState extends State<RouteForm> {
 
   Future<void> getRouteText() async {
     List<String> routeInstructions = await LocationService.getInstructions(widget.origin, widget.destination, widget.mode);
-    setState(() {
-      instructions = routeInstructions;
-    });
+
+    if (mounted) {
+      setState(() {
+        instructions = routeInstructions;
+      });
+    }
+
   }
 
   @override
