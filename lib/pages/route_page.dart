@@ -42,6 +42,7 @@ class RouteForm extends StatefulWidget {
 }
 
 class RouteFormState extends State<RouteForm> {
+
   List<String> instructions = [];
 
   @override
@@ -52,11 +53,13 @@ class RouteFormState extends State<RouteForm> {
 
   Future<void> getRouteText() async {
     List<String> routeInstructions = await LocationService.getInstructions(widget.origin, widget.destination, widget.mode);
+
     if (mounted) {
       setState(() {
         instructions = routeInstructions;
       });
     }
+
   }
 
   @override
