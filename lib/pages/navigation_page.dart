@@ -91,7 +91,9 @@ class _NavigationPageState extends State<NavigationPage> {
       case MapBoxEvent.navigation_cancelled:
         // 處理導航完成或取消事件
         await MapBoxNavigation.instance.finishNavigation();
-        Navigator.pop(context);
+        if(mounted){
+          Navigator.pop(context);
+        }
         break;
       default:
         break;

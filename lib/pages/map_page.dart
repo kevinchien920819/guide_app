@@ -136,7 +136,9 @@ class _MapPageState extends State<MapPage> {
         );
       });
     } else {
-      DialogService.showErrorDialog(context, 'Error: ${json['error_message']}');
+      if(mounted){
+        DialogService.showErrorDialog(context, 'Error: ${json['error_message']}');
+      }
     }
   }
 
