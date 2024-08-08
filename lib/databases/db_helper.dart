@@ -1,16 +1,14 @@
 import 'package:mysql1/mysql1.dart';
 
 class DbHelper {
-  // MySQL 数据库配置
-  final String host = 'your_mysql_host';
-  final int port = 3306; // MySQL 默认端口
-  final String user = 'your_mysql_user';
-  final String password = 'your_mysql_password';
-  final String dbName = 'your_database_name';
+  final String host = '127.0.0.1';
+  final int port = 3306;
+  final String user = 'root';
+  // final String password = ''; // 预设不设定密码
+  final String dbName = 'guide_app';
 
   MySqlConnection? _connection;
 
-  // 获取 MySQL 连接
   Future<MySqlConnection> get connection async {
     if (_connection != null) {
       return _connection!;
@@ -20,48 +18,72 @@ class DbHelper {
   }
 
   Future<MySqlConnection> _initDb() async {
-    final settings = ConnectionSettings(
-      host: host,
-      port: port,
-      user: user,
-      password: password,
-      db: dbName,
-    );
-    return await MySqlConnection.connect(settings);
+    try {
+      final settings = ConnectionSettings(
+        host: host,
+        port: port,
+        user: user,
+        // password: password,
+        db: dbName,
+      );
+      print('Attempting to connect to the database...');
+      final conn = await MySqlConnection.connect(settings);
+      print('Database connection established.');
+      return conn;
+    } catch (e) {
+      print('Error connecting to the database: $e');
+      rethrow;
+    }
   }
 
-  // 创建用户表
   Future<void> createUserTable() async {
-    final conn = await connection;
-    await conn.query('''
-    CREATE TABLE IF NOT EXISTS User (
-      email VARCHAR(255) PRIMARY KEY,
-      password VARCHAR(255) NOT NULL
-    )
-    ''');
+    try {
+      final conn = await connection;
+      await conn.query('''
+        CREATE TABLE IF NOT EXISTS User (
+          email VARCHAR(255) PRIMARY KEY,
+          password VARCHAR(255) NOT NULL
+        )
+      ''');
+      print('User table created or already exists.');
+    } catch (e) {
+      print('Error creating user table: $e');
+    }
   }
 
-  // 插入用户
   Future<void> insertUser(String email, String password) async {
-    final conn = await connection;
-    await conn.query(
-      'INSERT INTO User (email, password) VALUES (?, ?)',
-      [email, password],
-    );
+    try {
+      final conn = await connection;
+      await conn.query(
+        'INSERT INTO User (email, password) VALUES (?, ?)',
+        [email, password],
+      );
+      print('User inserted successfully.');
+    } catch (e) {
+      print('Error inserting user: $e');
+    }
   }
 
-  // 获取用户
   Future<Results> getUser(String email) async {
-    final conn = await connection;
-    return await conn.query(
-      'SELECT * FROM User WHERE email = ?',
-      [email],
-    );
+    try {
+      final conn = await connection;
+      return await conn.query(
+        'SELECT * FROM User WHERE email = ?',
+        [email],
+      );
+    } catch (e) {
+      print('Error getting user: $e');
+      rethrow;
+    }
   }
 
-  // 关闭数据库连接
   Future<void> closeDb() async {
-    final conn = await connection;
-    await conn.close();
+    try {
+      final conn = await connection;
+      await conn.close();
+      print('Database connection closed.');
+    } catch (e) {
+      print('Error closing database connection: $e');
+    }
   }
 }

@@ -22,7 +22,7 @@ class LoginController extends GetxController {
     isLoading.value = true;
     String email = emailController.text;
     String password = passwordController.text;
-
+    print('Email: $email, Password: $password');
     try {
       DbHelper dbHelper = DbHelper();
       Results userResults = await dbHelper.getUser(email);
