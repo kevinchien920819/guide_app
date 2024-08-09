@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-  import 'package:flutter_guide_app/pages/main_page.dart';
+import 'package:flutter_guide_app/pages/main_page.dart';
 import 'package:get/get.dart';
 import 'package:mysql1/mysql1.dart';
 import '../databases/db_helper.dart';
@@ -32,7 +32,7 @@ class LoginController extends GetxController {
         if (user['password'] == password) {
           // 登錄成功，導航到個人化頁面
           isLoggedIn.value = true;
-          Get.offAll(() => MainPage());
+          Get.offAll(() => const MainPage());
         } else {
           errorMessage.value = 'Incorrect password';
         }

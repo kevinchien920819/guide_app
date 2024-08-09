@@ -86,4 +86,17 @@ class DbHelper {
       print('Error closing database connection: $e');
     }
   }
+
+  Future<Results> getFavoritePlaces(String email)async{
+    try {
+      final conn = await connection;
+      return await conn.query(
+        'SELECT * FROM FavoritePlaces where name = ?',
+        [email],
+      );
+    } catch (e) {
+      print('Error getting favorite places: $e');
+      rethrow;
+    }
+  }
 }
